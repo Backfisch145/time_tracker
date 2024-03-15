@@ -9,6 +9,7 @@ import 'package:time_tracker/data/task.dart';
 import 'package:time_tracker/history/history_page.dart';
 import 'package:time_tracker/stopwatch/my_stopwatch.dart';
 import 'package:time_tracker/stopwatch/stopwatch_page.dart';
+import 'package:time_tracker/theme/color_schemes.dart';
 
 import 'data/adapter/task_adapter.dart';
 import 'states/global_state.dart';
@@ -57,6 +58,12 @@ void _addSavedTasksToGlobalState(GlobalState gs) async {
     }
     gs.stopwatches.add(sw);
   }
+  for (var element in taskHistoryBox.values) {
+    if (kDebugMode) {
+      print("Main._addSavedTasksToGlobalState: add historyTask: $element");
+    }
+    gs.taskHistory.add(element);
+  }
   gs.manualNotify();
 }
 
@@ -68,14 +75,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Time Tracker\n Fabian Jäger 349405',
-      theme: ThemeData(
-        useMaterial3: true,
-        // colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(100, 173, 166, 147), brightness: Brightness.light),
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(100, 168, 159, 130), brightness: Brightness.light),
-      ),
-      darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(100, 173, 166, 147), brightness: Brightness.dark),
-      ),
+      theme: ThemeData(useMaterial3: true, colorScheme: lightColorScheme),
+      darkTheme: ThemeData(useMaterial3: true, colorScheme: darkColorScheme),
       home: const MyHomePage(),
     );
   }
@@ -110,13 +111,38 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
+
+    Color appBarColor = Theme.of(context).colorScheme.primary;
+    Color onAppBarColor = Theme.of(context).colorScheme.onPrimary;
+
     return Consumer<GlobalState>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(value.title),
+          backgroundColor: appBarColor,
+          title: Text(
+              value.title,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onPrimary
+          )
+          ),
+          actions: [
+            IconButton(
+              onPressed: () => {},
+              icon: const Icon(Icons.history),
+              color: onAppBarColor,
+            ),
+            IconButton(
+              onPressed: () => {},
+              icon: const Icon(Icons.settings),
+              color: onAppBarColor,
+            )
+          ],
+          leading: IconButton.filledTonal(
+            onPressed: () => {},
+            icon: const Icon(Icons.person),
+          ),
         ),
+
         body: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(image: AssetImage("assets/images/background.jpg"), fit: BoxFit.cover),

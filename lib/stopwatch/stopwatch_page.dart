@@ -56,13 +56,13 @@ class _StopwatchPageState extends State<StopwatchPage> {
     return Consumer<GlobalState>(
       builder: (context, state, child) {
         return ListView.separated(
-          itemCount: state.stopwatches.length,
-          itemBuilder: (context, index) => StopwatchCard(
-            stopwatch: state.stopwatches[index],
-
-          ),
-          separatorBuilder: (context, index) => const Gap(16),
-        );
+            itemCount: state.stopwatches.length,
+            itemBuilder: (context, index) => StopwatchCard(
+              stopwatch: state.stopwatches[index],
+              color: Theme.of(context).cardColor.withAlpha(80),
+            ),
+            separatorBuilder: (context, index) => const Gap(4),
+          );
       },
     );
 
