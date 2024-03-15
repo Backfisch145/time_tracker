@@ -1,13 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
-import 'package:time_tracker/TaskEntityListElement.dart';
+import 'package:time_tracker/data/boxes.dart';
 import 'package:time_tracker/states/global_state.dart';
-import 'package:time_tracker/projects/data/task_entity.dart';
-import 'package:time_tracker/projects/presentation/add_projectPage.dart';
-import 'package:time_tracker/stopwatch/StopwatchCard.dart';
+import 'package:time_tracker/data/task.dart';
+import 'package:time_tracker/stopwatch/stopwatch_card.dart';
 
-import 'MyStopwatch.dart';
+import 'my_stopwatch.dart';
 
 
 class StopwatchPage extends StatefulWidget {
@@ -18,7 +19,7 @@ class StopwatchPage extends StatefulWidget {
 }
 
 class _StopwatchPageState extends State<StopwatchPage> {
-  List<MyStopwatch> _stopwatches = List.empty(growable: true);
+  // final List<MyStopwatch> _stopwatches = List.empty(growable: true);
 
 
   @override
@@ -36,19 +37,34 @@ class _StopwatchPageState extends State<StopwatchPage> {
   }
 
   void newStopwatch() {
-    print("StopwatchPage.newStopwatch: called()");
-    _stopwatches.add(MyStopwatch.upwards());
-    setState(() {});
+    if (kDebugMode) {
+      print("StopwatchPage.newStopwatch: called()");
+    }
+    var task = Task();
+    GlobalState state = Provider.of<GlobalState>(context, listen: false);
+    MyStopwatch sw = MyStopwatch.upwards(task: task);
+    state.stopwatches.add(sw);
+    taskBox.put(sw.task.id, sw.task);
+    state.manualNotify();
   }
 
   @override
   Widget build(BuildContext buildContext) {
-    print("StopwatchPage.build: called()");
-    // This method is rerun every time setState is called, for instance as done
-    return ListView.separated(
-        itemCount: _stopwatches.length,
-        itemBuilder: (context, index) => StopwatchCard(stopwatch: _stopwatches[index]),
-        separatorBuilder: (context, index) => const Divider(),
-      );
+    if (kDebugMode) {
+      print("StopwatchPage.build: called()");
+    }
+    return Consumer<GlobalState>(
+      builder: (context, state, child) {
+        return ListView.separated(
+          itemCount: state.stopwatches.length,
+          itemBuilder: (context, index) => StopwatchCard(
+            stopwatch: state.stopwatches[index],
+
+          ),
+          separatorBuilder: (context, index) => const Gap(16),
+        );
+      },
+    );
+
   }
 }

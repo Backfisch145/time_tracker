@@ -1,17 +1,63 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:time_tracker/favourites/presentation/favouritesPage.dart';
-import 'package:time_tracker/history/presentation/historyPage.dart';
-import 'package:time_tracker/projects/presentation/projectPage.dart';
+import 'package:time_tracker/data/adapter/duration_adapter.dart';
+import 'package:time_tracker/data/boxes.dart';
+import 'package:time_tracker/data/task.dart';
+import 'package:time_tracker/history/history_page.dart';
+import 'package:time_tracker/stopwatch/my_stopwatch.dart';
 import 'package:time_tracker/stopwatch/stopwatch_page.dart';
 
+import 'data/adapter/task_adapter.dart';
 import 'states/global_state.dart';
 
-void main() {
+
+var logger = Logger(
+  printer: PrettyPrinter(),
+);
+
+void main() async {
+
+
+  await Hive.initFlutter();
+  //await Hive.deleteBoxFromDisk("taskBox");
+  Hive
+    ..registerAdapter(TaskAdapter())
+    ..registerAdapter(DurationAdapter());
+  taskBox = await Hive.openBox<Task>("taskBox");
+  taskHistoryBox = await Hive.openBox<Task>("taskHistoryBox");
+
   runApp(ChangeNotifierProvider(
-    create: (context) => GlobalState(),
+    create: (context) {
+      GlobalState gs = GlobalState();
+      _addSavedTasksToGlobalState(gs);
+      return gs;
+    },
     child: const MyApp(),
   ));
+}
+
+void _addSavedTasksToGlobalState(GlobalState gs) async {
+  if (!taskBox.isOpen) {
+    taskBox = await Hive.openBox<Task>("taskBox");
+  }
+
+  if (kDebugMode) {
+    print("Main._addSavedTasksToGlobalState: called()");
+  }
+  for (var element in taskBox.values) {
+    if (kDebugMode) {
+      print("Main._addSavedTasksToGlobalState: add task: $element");
+    }
+    MyStopwatch sw = MyStopwatch.upwards(task: element);
+    if (element.running) {
+      sw.start();
+    }
+    gs.stopwatches.add(sw);
+  }
+  gs.manualNotify();
 }
 
 class MyApp extends StatelessWidget {
@@ -24,10 +70,11 @@ class MyApp extends StatelessWidget {
       title: 'Time Tracker\n Fabian Jäger 349405',
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.light),
+        // colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(100, 173, 166, 147), brightness: Brightness.light),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(100, 168, 159, 130), brightness: Brightness.light),
       ),
       darkTheme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(100, 173, 166, 147), brightness: Brightness.dark),
       ),
       home: const MyHomePage(),
     );
@@ -42,17 +89,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 enum Page {
-  FAVOURITES(icon: Icons.star),
-  PROJECTS(icon: Icons.event_note),
-  HISTORY(icon: Icons.history);
+  // FAVOURITES(icon: Icons.star),
+  stopwatches(icon: Icons.event_note),
+  history(icon: Icons.history);
 
   final IconData icon;
 
   const Page({required this.icon});
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  Page selectedPage = Page.PROJECTS;
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+
+  Page selectedPage = Page.stopwatches;
 
   void _setSelectedPage(Page selectedPage) {
     setState(() {
@@ -69,12 +117,15 @@ class _MyHomePageState extends State<MyHomePage> {
           backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           title: Text(value.title),
         ),
-        body: switch (selectedPage) {
-          Page.PROJECTS => const StopwatchPage(),
-          // Page.PROJECTS => const ProjectPage(),
-          Page.FAVOURITES => const FavouritesPage(),
-          Page.HISTORY => const HistoryPage(),
-        },
+        body: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(image: AssetImage("assets/images/main_background.jpg"), fit: BoxFit.cover),
+          ),
+          child: switch (selectedPage) {
+            Page.stopwatches => const StopwatchPage(),
+            Page.history => const HistoryPage(),
+          },
+        ),
         floatingActionButton: value.fab,
         bottomNavigationBar: Visibility(
           visible: value.showBottomNavBar,
@@ -88,5 +139,64 @@ class _MyHomePageState extends State<MyHomePage> {
         )),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    if (kDebugMode) {
+      print("Main.initState: called()");
+    }
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    if (kDebugMode) {
+      print("Main.dispose: called()");
+    }
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+
+  _saveTasksToHive(GlobalState gState) async {
+    if (kDebugMode) {
+      print("Main._saveTasksToHive: called()");
+    }
+    // await boxTask.clear();
+
+    for (var value in gState.stopwatches) {
+      Task t = value.task;
+      await taskBox.put(t.id, t);
+      if (kDebugMode) {
+        print("Main._saveTasksToHive: saved Task $t");
+      }
+    }
+    taskBox.flush();
+
+    for (var task in gState.taskHistory) {
+      await taskHistoryBox.put(task.id, task);
+      if (kDebugMode) {
+        print("Main._saveTasksToHive: saved HistoryTask $task");
+      }
+    }
+    taskHistoryBox.flush();
+  }
+  @override
+  didChangeAppLifecycleState(AppLifecycleState state) {
+    if (kDebugMode) {
+      print("Main.didChangeAppLifecycleState: called with state = $state");
+    }
+    super.didChangeAppLifecycleState(state);
+    GlobalState gState = Provider.of<GlobalState>(context, listen: false);
+    if (state == AppLifecycleState.paused) {
+
+      _saveTasksToHive(gState);
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      // _addSavedTasksToGlobalState(gState);
+    }
   }
 }

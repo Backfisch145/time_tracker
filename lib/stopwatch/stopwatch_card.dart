@@ -1,11 +1,12 @@
-import 'dart:ui';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:gap/gap.dart';
-import 'package:time_tracker/stopwatch/MyStopwatch.dart';
-import 'package:time_tracker/utils/DurationHelper.dart';
+import 'package:provider/provider.dart';
+import 'package:time_tracker/data/boxes.dart';
+import 'package:time_tracker/stopwatch/my_stopwatch.dart';
+
+import '../helper/duration_helper.dart';
+import '../main.dart';
+import '../states/global_state.dart';
 
 class StopwatchCard extends StatefulWidget {
   final bool enabled;
@@ -18,11 +19,11 @@ class StopwatchCard extends StatefulWidget {
   final EdgeInsetsGeometry? margin;
   final Clip? clipBehavior;
   final bool semanticContainer;
-  final MyStopwatch? stopwatch;
+  final MyStopwatch stopwatch;
 
   const StopwatchCard({
     super.key,
-    this.stopwatch,
+    required this.stopwatch,
     this.enabled = true,
     this.color,
     this.shadowColor,
@@ -35,66 +36,60 @@ class StopwatchCard extends StatefulWidget {
     this.semanticContainer = true,
   });
 
-
-
   @override
   State<StatefulWidget> createState() => _StopwatchCard();
-
 }
 
 class _StopwatchCard extends State<StopwatchCard> {
-  TextEditingController? _controller = TextEditingController();
+  late TextEditingController _controller;
   late MyStopwatch _stopwatch;
 
   @override
   void initState() {
     super.initState();
-    _stopwatch = MyStopwatch.upwards();
+    _stopwatch = widget.stopwatch;
+    _controller = TextEditingController(text: _stopwatch.task.name);
+    _controller.addListener(() {
+      _stopwatch.task.name = _controller.value.text;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-
     try {
       return ListenableBuilder(
           listenable: _stopwatch,
           builder: (context, child) {
-
             List<Widget> controlButtons = List.empty(growable: true);
 
-
             if (_stopwatch.isRunning()) {
-              controlButtons.add(
-                  ElevatedButton(
-                      onPressed: () {
-                        _stopwatch.stop();
-                      },
-                      child: Icon(Icons.pause)
-                  )
-              );
+              controlButtons.add(ElevatedButton(
+                  onPressed: () {
+                    _stopwatch.stop();
+                  },
+                  child: const Icon(Icons.pause)));
             } else {
-              controlButtons.add(
-                  ElevatedButton(
-                      onPressed: () {
-                        _stopwatch.start();
-                      },
-                      child: Icon(Icons.play_arrow)
-                  )
-              );
+              controlButtons.add(ElevatedButton(
+                  onPressed: () {
+                    _stopwatch.start();
+                  },
+                  child: const Icon(Icons.play_arrow)));
             }
-            if (_stopwatch.duration.inMilliseconds > 0) {
-              controlButtons.add(
-                  ElevatedButton(
-                      onPressed: () {
-                        _stopwatch.stop();
-                        // TODO: speichern der Stopwatch in der Datenbank
-                      },
-                      child: Icon(Icons.stop)
-                  )
-              );
+            if (_stopwatch.task.duration.inMilliseconds > 0) {
+              controlButtons.add(ElevatedButton(
+                  onPressed: () {
+                    _stopwatch.stop();
+                    taskBox.delete(_stopwatch.task.id);
+                    taskHistoryBox.put(_stopwatch.task.id, _stopwatch.task);
+
+                    GlobalState state =
+                        Provider.of<GlobalState>(context, listen: false);
+                    state.taskHistory.add(_stopwatch.task);
+                    state.stopwatches.remove(_stopwatch);
+                    state.manualNotify();
+                  },
+                  child: const Icon(Icons.stop)));
             }
-
-
 
             return Card(
               color: widget.color,
@@ -106,12 +101,18 @@ class _StopwatchCard extends State<StopwatchCard> {
               margin: widget.margin,
               clipBehavior: widget.clipBehavior,
               semanticContainer: widget.semanticContainer,
-              child: Column(
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                  // color: Colors.redAccent,
+                ),
+                child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        printDuration(_stopwatch.duration),
+                        printDuration(_stopwatch.task.duration),
                         style: Theme.of(context).textTheme.headlineLarge,
                       ),
                       SizedBox(
@@ -119,23 +120,23 @@ class _StopwatchCard extends State<StopwatchCard> {
                         child: TextField(
                           controller: _controller,
                           decoration: const InputDecoration(
-                              hintText: 'Name eingeben',
-                              // border: InputBorder.none
+                            hintText: 'Name eingeben',
+                            // border: InputBorder.none
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      // Spacer(),
-                      Row (
+                      const Gap(4),
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: controlButtons,
                       )
-                    ]
-                ),
+                    ]),
+              ),
             );
           });
     } catch (a) {
-      print("buildListEntry: ERROR - $a");
+      logger.e("StopwatchCard.build: could not bauild Card", error: a);
       rethrow;
     }
   }
