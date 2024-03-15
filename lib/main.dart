@@ -119,7 +119,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
         ),
         body: Container(
           decoration: const BoxDecoration(
-            image: DecorationImage(image: AssetImage("assets/images/main_background.jpg"), fit: BoxFit.cover),
+            image: DecorationImage(image: AssetImage("assets/images/background.jpg"), fit: BoxFit.cover),
           ),
           child: switch (selectedPage) {
             Page.stopwatches => const StopwatchPage(),
