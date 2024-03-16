@@ -1,5 +1,9 @@
 # Project Title: Time Tracker
 
+## Author
+Fabian Jäger
+Matrikelnummer: 349405
+
 ## Introduction:
 This Flutter application is designed to let you easily track your working time over the Day.
 
