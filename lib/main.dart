@@ -7,13 +7,11 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:time_tracker/data/adapter/duration_adapter.dart';
 import 'package:time_tracker/data/boxes.dart';
-import 'package:time_tracker/data/task.dart';
-import 'package:time_tracker/states/task_state.dart';
-import 'package:time_tracker/stopwatch/my_stopwatch.dart';
+import 'package:time_tracker/state/task_state.dart';
 import 'package:time_tracker/stopwatch/stopwatch_page.dart';
+import 'package:time_tracker/data/task.dart';
+import 'package:time_tracker/data/adapter/task_adapter.dart';
 import 'package:time_tracker/theme/color_schemes.dart';
-
-import 'data/adapter/task_adapter.dart';
 
 
 var logger = Logger(
@@ -26,8 +24,6 @@ void main() async {
 
 
   await Hive.initFlutter();
-  // Stopship
-  // await Hive.deleteBoxFromDisk("taskBox");
   Hive
     ..registerAdapter(TaskAdapter())
     ..registerAdapter(DurationAdapter());
@@ -66,7 +62,6 @@ void _addSavedTasksToGlobalState(BuildContext context, TaskState gs) {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -115,7 +110,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     if (kDebugMode) {
       print("Main._saveTasksToHive: called()");
     }
-    // await boxTask.clear();
 
     for (var value in gState.allTasks) {
       Task t = value;
@@ -136,10 +130,6 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused) {
 
       _saveTasksToHive(gState);
-    }
-
-    if (state == AppLifecycleState.resumed) {
-      // _addSavedTasksToGlobalState(gState);
     }
   }
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
-import '../../data/task.dart';
-import '../../helper/duration_helper.dart';
+import '../data/task.dart';
+import '../../../helper/duration_helper.dart';
 
-class TaskCard extends StatefulWidget {
+class HistoryCard extends StatefulWidget {
   final bool enabled;
   final Color? color;
   final Color? onColor;
@@ -17,7 +18,7 @@ class TaskCard extends StatefulWidget {
   final bool semanticContainer;
   final Task task;
 
-  const TaskCard({
+  const HistoryCard({
     super.key,
     required this.task,
     this.enabled = true,
@@ -34,10 +35,10 @@ class TaskCard extends StatefulWidget {
   });
 
   @override
-  State<TaskCard> createState() => _TaskCardState();
+  State<HistoryCard> createState() => _HistoryCardState();
 }
 
-class _TaskCardState extends State<TaskCard> {
+class _HistoryCardState extends State<HistoryCard> {
   late TextEditingController _controller;
 
 
@@ -52,17 +53,17 @@ class _TaskCardState extends State<TaskCard> {
 
 
   Widget _getTitle() {
-    // if (widget.task.lastUpdate != null) {
-    //   return Text(
-    //     DateFormat('yyyy-MM-dd – kk:mm').format(widget.task.lastUpdate!),
-    //     style: Theme.of(context).textTheme.titleSmall,
-    //   );
-    // } else {
+    if (widget.task.completion != null) {
+      return Text(
+        DateFormat('hh:mm \'Uhr\' dd.MM.yyyy').format(widget.task.completion!),
+        style: Theme.of(context).textTheme.titleSmall,
+      );
+    } else {
       return Text(
         "UNKNOWN",
         style: Theme.of(context).textTheme.titleSmall,
       );
-    // }
+    }
   }
 
   @override
@@ -78,10 +79,9 @@ class _TaskCardState extends State<TaskCard> {
       clipBehavior: widget.clipBehavior,
       semanticContainer: widget.semanticContainer,
       child: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(2),
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
-          // color: Colors.redAccent,
         ),
         child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -103,7 +103,6 @@ class _TaskCardState extends State<TaskCard> {
                 printDuration(widget.task.duration),
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-
             ]
         ),
       ),

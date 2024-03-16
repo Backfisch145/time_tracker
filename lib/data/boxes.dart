@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:time_tracker/data/task.dart';
+
+import 'task.dart';
 
 late Box<Task> taskBox;

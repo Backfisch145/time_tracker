@@ -1,9 +1,9 @@
 
 import 'dart:collection';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:time_tracker/data/task.dart';
 
-import '../data/task.dart';
 import '../main.dart';
 
 class TaskState extends ChangeNotifier {
@@ -19,7 +19,6 @@ class TaskState extends ChangeNotifier {
       UnmodifiableListView(_tasks.where((task) => task.completion == null));
   UnmodifiableListView<Task> get completedTasks =>
       UnmodifiableListView(_tasks.where((task) => task.completion != null));
-
 
   void addTask(Task task) {
     _tasks.add(task);
@@ -43,8 +42,12 @@ class TaskState extends ChangeNotifier {
   }
 
   void incDuration() {
-    print("TaskState.incDuration called()");
-    runningTasks.forEach((element) => element.incDuration());
+    if (kDebugMode) {
+      print("TaskState.incDuration called()");
+    }
+    for (var element in runningTasks) {
+      element.incDuration();
+    }
     notifyListeners();
   }
 
@@ -72,6 +75,11 @@ class TaskState extends ChangeNotifier {
     } on Exception catch (_, e) {
       logger.d(e);
     }
+  }
+
+  void setTaskName(Task task, String text) {
+    task.name = text;
+    notifyListeners();
   }
 
 

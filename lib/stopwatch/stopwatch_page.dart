@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:gap/gap.dart';
 import 'package:provider/provider.dart';
-import 'package:time_tracker/data/boxes.dart';
 import 'package:time_tracker/history/history_page.dart';
-import 'package:time_tracker/data/task.dart';
-import 'package:time_tracker/states/task_state.dart';
+import 'package:time_tracker/state/task_state.dart';
 import 'package:time_tracker/stopwatch/stopwatch_card.dart';
+
+import '../about/about_page.dart';
+import '../data/task.dart';
 
 
 
@@ -19,23 +19,15 @@ class StopwatchPage extends StatefulWidget {
 }
 
 class _StopwatchPageState extends State<StopwatchPage> {
-  // final List<MyStopwatch> _stopwatches = List.empty(growable: true);
-
-
-  @override
-  void initState() {
-    super.initState();
-    SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-      // GlobalState state = Provider.of<GlobalState>(context, listen: false);
-    });
-  }
 
   void _newStopwatch() {
     if (kDebugMode) {
       print("StopwatchPage.newStopwatch: called()");
     }
     var task = Task();
-    print("StopwatchPage.newStopwatch: newTask = $task");
+    if (kDebugMode) {
+      print("StopwatchPage.newStopwatch: newTask = $task");
+    }
     TaskState state = Provider.of<TaskState>(context, listen: false);
     state.addTask(task);
   }
@@ -60,10 +52,10 @@ class _StopwatchPageState extends State<StopwatchPage> {
       },
     );
   }
-  Route _routeToLicences() {
+
+  Route _routeToAbout() {
     return PageRouteBuilder(
-      // pageBuilder: (context, animation, secondaryAnimation) => const AboutPage(),
-      pageBuilder: (context, animation, secondaryAnimation) => const LicensePage(),
+      pageBuilder: (context, animation, secondaryAnimation) => const AboutPage(),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const begin = Offset(0.0, 1.0);
         const end = Offset.zero;
@@ -116,17 +108,13 @@ class _StopwatchPageState extends State<StopwatchPage> {
             onPressed: () => {
               Navigator.push(
                   context,
-                  _routeToLicences()
+                  _routeToAbout()
               )
             },
-            icon: const Icon(Icons.description),
+            icon: const Icon(Icons.info),
             color: onAppBarColor,
           )
         ],
-        leading: IconButton.filledTonal(
-          onPressed: () => {},
-          icon: const Icon(Icons.person),
-        ),
       ),
       body: Container(
         decoration: const BoxDecoration(

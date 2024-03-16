@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart' show BinaryReader, BinaryWriter, TypeAdapter;
 
 import '../task.dart';
