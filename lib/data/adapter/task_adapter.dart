@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart' show BinaryReader, BinaryWriter, TypeAdapter;
 
 import '../task.dart';
@@ -12,11 +13,13 @@ class TaskAdapter extends TypeAdapter<Task> {
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
+
     Task t = Task()
       ..id = fields[0] as String?
       ..name = fields[1] as String
       ..lastUpdate = fields[3] as DateTime?
-      ..running = fields[5] as bool;
+      ..running = fields[5] as bool
+      ..completion = fields[6] as DateTime?;
 
 
     Duration d = fields[4] as Duration;
@@ -33,7 +36,7 @@ class TaskAdapter extends TypeAdapter<Task> {
   @override
   void write(BinaryWriter writer, Task obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -43,7 +46,9 @@ class TaskAdapter extends TypeAdapter<Task> {
       ..writeByte(4)
       ..write(obj.duration)
       ..writeByte(5)
-      ..write(obj.running);
+      ..write(obj.running)
+      ..writeByte(6)
+      ..write(obj.completion);
   }
 
   @override

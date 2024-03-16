@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../../data/task.dart';
 import '../../helper/duration_helper.dart';
 
-class TaskCard extends StatelessWidget {
+class TaskCard extends StatefulWidget {
   final bool enabled;
   final Color? color;
+  final Color? onColor;
   final Color? shadowColor;
   final ShapeBorder? shape;
   final Color? surfaceTintColor;
@@ -21,6 +22,7 @@ class TaskCard extends StatelessWidget {
     required this.task,
     this.enabled = true,
     this.color,
+    this.onColor,
     this.shadowColor,
     this.shape,
     this.surfaceTintColor,
@@ -32,17 +34,49 @@ class TaskCard extends StatelessWidget {
   });
 
   @override
+  State<TaskCard> createState() => _TaskCardState();
+}
+
+class _TaskCardState extends State<TaskCard> {
+  late TextEditingController _controller;
+
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.task.name);
+    _controller.addListener(() {
+      widget.task.name = _controller.value.text;
+    });
+  }
+
+
+  Widget _getTitle() {
+    // if (widget.task.lastUpdate != null) {
+    //   return Text(
+    //     DateFormat('yyyy-MM-dd – kk:mm').format(widget.task.lastUpdate!),
+    //     style: Theme.of(context).textTheme.titleSmall,
+    //   );
+    // } else {
+      return Text(
+        "UNKNOWN",
+        style: Theme.of(context).textTheme.titleSmall,
+      );
+    // }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Card(
-      color: color,
-      shadowColor: shadowColor,
-      shape: shape,
-      surfaceTintColor: surfaceTintColor,
-      elevation: elevation,
-      borderOnForeground: borderOnForeground,
-      margin: margin,
-      clipBehavior: clipBehavior,
-      semanticContainer: semanticContainer,
+      color: widget.color,
+      shadowColor: widget.shadowColor,
+      shape: widget.shape,
+      surfaceTintColor: widget.surfaceTintColor,
+      elevation: widget.elevation,
+      borderOnForeground: widget.borderOnForeground,
+      margin: widget.margin,
+      clipBehavior: widget.clipBehavior,
+      semanticContainer: widget.semanticContainer,
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: const BoxDecoration(
@@ -53,13 +87,23 @@ class TaskCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                printDuration(task.duration),
-                style: Theme.of(context).textTheme.headlineLarge,
+              _getTitle(),
+              TextField(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  hintText: 'Name eingeben',
+                  border: InputBorder.none
+                ),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: widget.onColor
+                ),
               ),
               Text(
-                  task.name
-              )
+                printDuration(widget.task.duration),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+
             ]
         ),
       ),

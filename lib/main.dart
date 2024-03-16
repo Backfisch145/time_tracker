@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
@@ -6,45 +8,50 @@ import 'package:provider/provider.dart';
 import 'package:time_tracker/data/adapter/duration_adapter.dart';
 import 'package:time_tracker/data/boxes.dart';
 import 'package:time_tracker/data/task.dart';
-import 'package:time_tracker/history/history_page.dart';
+import 'package:time_tracker/states/task_state.dart';
 import 'package:time_tracker/stopwatch/my_stopwatch.dart';
 import 'package:time_tracker/stopwatch/stopwatch_page.dart';
 import 'package:time_tracker/theme/color_schemes.dart';
 
 import 'data/adapter/task_adapter.dart';
-import 'states/global_state.dart';
 
 
 var logger = Logger(
   printer: PrettyPrinter(),
 );
 
+
+
 void main() async {
 
 
   await Hive.initFlutter();
-  //await Hive.deleteBoxFromDisk("taskBox");
+  // Stopship
+  // await Hive.deleteBoxFromDisk("taskBox");
   Hive
     ..registerAdapter(TaskAdapter())
     ..registerAdapter(DurationAdapter());
   taskBox = await Hive.openBox<Task>("taskBox");
-  taskHistoryBox = await Hive.openBox<Task>("taskHistoryBox");
+
+
 
   runApp(ChangeNotifierProvider(
     create: (context) {
-      GlobalState gs = GlobalState();
-      _addSavedTasksToGlobalState(gs);
-      return gs;
+      TaskState ts = TaskState();
+
+      Timer.periodic(
+        const Duration(seconds: 1), (Timer timer) {
+          ts.incDuration();
+        },
+      );
+      _addSavedTasksToGlobalState(context, ts);
+      return ts;
     },
     child: const MyApp(),
   ));
 }
 
-void _addSavedTasksToGlobalState(GlobalState gs) async {
-  if (!taskBox.isOpen) {
-    taskBox = await Hive.openBox<Task>("taskBox");
-  }
-
+void _addSavedTasksToGlobalState(BuildContext context, TaskState gs) {
   if (kDebugMode) {
     print("Main._addSavedTasksToGlobalState: called()");
   }
@@ -52,19 +59,8 @@ void _addSavedTasksToGlobalState(GlobalState gs) async {
     if (kDebugMode) {
       print("Main._addSavedTasksToGlobalState: add task: $element");
     }
-    MyStopwatch sw = MyStopwatch.upwards(task: element);
-    if (element.running) {
-      sw.start();
-    }
-    gs.stopwatches.add(sw);
+    gs.addTask(element);
   }
-  for (var element in taskHistoryBox.values) {
-    if (kDebugMode) {
-      print("Main._addSavedTasksToGlobalState: add historyTask: $element");
-    }
-    gs.taskHistory.add(element);
-  }
-  gs.manualNotify();
 }
 
 class MyApp extends StatelessWidget {
@@ -89,82 +85,11 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-enum Page {
-  // FAVOURITES(icon: Icons.star),
-  stopwatches(icon: Icons.event_note),
-  history(icon: Icons.history);
-
-  final IconData icon;
-
-  const Page({required this.icon});
-}
-
 class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
-
-  Page selectedPage = Page.stopwatches;
-
-  void _setSelectedPage(Page selectedPage) {
-    setState(() {
-      this.selectedPage = selectedPage;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-
-    Color appBarColor = Theme.of(context).colorScheme.primary;
-    Color onAppBarColor = Theme.of(context).colorScheme.onPrimary;
-
-    return Consumer<GlobalState>(
-      builder: (context, value, child) => Scaffold(
-        appBar: AppBar(
-          backgroundColor: appBarColor,
-          title: Text(
-              value.title,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onPrimary
-          )
-          ),
-          actions: [
-            IconButton(
-              onPressed: () => {},
-              icon: const Icon(Icons.history),
-              color: onAppBarColor,
-            ),
-            IconButton(
-              onPressed: () => {},
-              icon: const Icon(Icons.settings),
-              color: onAppBarColor,
-            )
-          ],
-          leading: IconButton.filledTonal(
-            onPressed: () => {},
-            icon: const Icon(Icons.person),
-          ),
-        ),
-
-        body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(image: AssetImage("assets/images/background.jpg"), fit: BoxFit.cover),
-          ),
-          child: switch (selectedPage) {
-            Page.stopwatches => const StopwatchPage(),
-            Page.history => const HistoryPage(),
-          },
-        ),
-        floatingActionButton: value.fab,
-        bottomNavigationBar: Visibility(
-          visible: value.showBottomNavBar,
-          child: BottomNavigationBar(
-            items: Page.values
-                .map((e) =>
-                BottomNavigationBarItem(label: e.name, icon: Icon(e.icon)))
-                .toList(),
-          onTap: (pos) => {_setSelectedPage(Page.values[pos])},
-          currentIndex: Page.values.indexOf(selectedPage),
-        )),
-      ),
-    );
+    return const StopwatchPage();
   }
 
   @override
@@ -186,28 +111,20 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
 
-  _saveTasksToHive(GlobalState gState) async {
+  _saveTasksToHive(TaskState gState) async {
     if (kDebugMode) {
       print("Main._saveTasksToHive: called()");
     }
     // await boxTask.clear();
 
-    for (var value in gState.stopwatches) {
-      Task t = value.task;
+    for (var value in gState.allTasks) {
+      Task t = value;
       await taskBox.put(t.id, t);
       if (kDebugMode) {
         print("Main._saveTasksToHive: saved Task $t");
       }
     }
     taskBox.flush();
-
-    for (var task in gState.taskHistory) {
-      await taskHistoryBox.put(task.id, task);
-      if (kDebugMode) {
-        print("Main._saveTasksToHive: saved HistoryTask $task");
-      }
-    }
-    taskHistoryBox.flush();
   }
   @override
   didChangeAppLifecycleState(AppLifecycleState state) {
@@ -215,7 +132,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
       print("Main.didChangeAppLifecycleState: called with state = $state");
     }
     super.didChangeAppLifecycleState(state);
-    GlobalState gState = Provider.of<GlobalState>(context, listen: false);
+    TaskState gState = Provider.of<TaskState>(context, listen: false);
     if (state == AppLifecycleState.paused) {
 
       _saveTasksToHive(gState);

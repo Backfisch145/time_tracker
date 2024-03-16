@@ -11,7 +11,7 @@ import '../data/task.dart';
 import '../helper/duration_helper.dart';
 import '../main.dart';
 
-class StopwatchCard extends StatelessWidget {
+class StopwatchCard extends StatefulWidget {
   final bool enabled;
   final Color? color;
   final Color? onColor;
@@ -42,89 +42,10 @@ class StopwatchCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    try {
-      List<Widget> controlButtons = List.empty(growable: true);
-
-      if (task.running) {
-        controlButtons.add(ElevatedButton(
-            onPressed: () {
-              Provider.of<TaskState>(context, listen: false).toggleTask(task);
-            },
-            child: const Icon(Icons.pause)));
-      } else {
-        controlButtons.add(ElevatedButton(
-            onPressed: () {
-              Provider.of<TaskState>(context, listen: false).toggleTask(task);
-            },
-            child: const Icon(Icons.play_arrow)));
-
-        controlButtons.add(ElevatedButton(
-            onPressed: () {
-              Provider.of<TaskState>(context, listen: false).finishTask(task);
-            },
-            child: const Icon(Icons.stop)));
-      }
-
-      return Card(
-        color: color,
-        shadowColor: shadowColor,
-        shape: shape,
-        surfaceTintColor: surfaceTintColor,
-        elevation: elevation,
-        borderOnForeground: borderOnForeground,
-        margin: margin,
-        clipBehavior: clipBehavior,
-        semanticContainer: semanticContainer,
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
-            // color: Colors.redAccent,
-          ),
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  printDuration(task.duration),
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: onColor
-                  ),
-                ),
-                // SizedBox(
-                //   width: 320,
-                //   child: TextField(
-                //     controller: _controller,
-                //     decoration: const InputDecoration(
-                //       hintText: 'Name eingeben',
-                //     ),
-                //     textAlign: TextAlign.center,
-                //     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                //         color: widget.onColor
-                //     ),
-                //   ),
-                // ),
-                const Gap(4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: controlButtons,
-                )
-              ]),
-        ),
-      );
-
-      // });
-    } catch (a) {
-      logger.e("StopwatchCard.build: could not bauild Card", error: a);
-      rethrow;
-    }
-  }
-
-
+  State<StatefulWidget> createState() => _StopwatchCard();
 }
 
-/*class _StopwatchCard extends State<StopwatchCard> {
+class _StopwatchCard extends State<StopwatchCard> {
   late TextEditingController _controller;
   late Task _task;
   Timer? _timer = null;
@@ -191,7 +112,7 @@ class StopwatchCard extends StatelessWidget {
                       _stop();
                       // taskBox.delete(_stopwatch.task.id);
                       // taskHistoryBox.put(_stopwatch.task.id, _stopwatch.task);
-                      Provider.of<GlobalState>(context, listen: false).removeTask(_task);
+                      // Provider.of<TaskState>(context, listen: false).removeTask(_task);
                     },
                     child: const Icon(Icons.stop)));
             }
@@ -250,4 +171,4 @@ class StopwatchCard extends StatelessWidget {
       rethrow;
     }
   }
-}*/
+}

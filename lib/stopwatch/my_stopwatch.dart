@@ -1,7 +1,10 @@
 import 'dart:async' show Timer;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:time_tracker/data/task.dart';
+
+import '../data/boxes.dart';
+import '../data/task.dart';
 
 class MyStopwatch with ChangeNotifier {
 
@@ -39,18 +42,27 @@ class MyStopwatch with ChangeNotifier {
     );
   }
 
+  // void finish() {
+  //   if (kDebugMode) {
+  //     print("MyStopwatch.finish: called()");
+  //     print("MyStopwatch.finish: task = $task");
+  //   }
+  //
+  //   task.lastUpdate = DateTime.now();
+  //   _timer?.cancel();
+  //   task.running = false;
+  //   taskBox.delete(task.id);
+  //   taskHistoryBox.put(task.id, task);
+  //    notify();
+  // }
+
   void stop() {
     if (kDebugMode) {
       print("MyStopwatch.stop: called()");
     }
     task.running = false;
-    if (_timer == null) {
-      return;
-    }
-
-    if (_timer!.isActive) {
-      _timer!.cancel();
-    }
+    _timer?.cancel();
+    task.lastUpdate = DateTime.now();
     notify();
   }
 
@@ -85,6 +97,21 @@ class MyStopwatch with ChangeNotifier {
     super.dispose();
   }
 
+  @override
+  String toString() {
+    return 'MyStopwatch{task: $task, direction: $direction}';
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MyStopwatch &&
+          runtimeType == other.runtimeType &&
+          task.id == other.task.id &&
+          direction == other.direction;
+
+  @override
+  int get hashCode => task.hashCode ^ direction.hashCode;
 }
 
 enum StopwatchDirection { forward, backward }
