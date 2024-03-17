@@ -53,11 +53,10 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
           child: Consumer<TaskState>(
               builder: (context, state, child) {
-                Map<String, List<Task>> taskDateMap = _mapTasksByDate(
-                    state.completedTasks
-                        .where((element) => (element.duration.inSeconds != 0) || !_hideZeroDuration)
-                        .toList()
-                );
+
+                List<Task> eas = List.of(state.completedTasks.where((element) => (element.duration.inSeconds != 0) || !_hideZeroDuration));
+                eas.sort((a, b) => a.completion!.isBefore(b.completion!)? 1 : 0);
+                Map<String, List<Task>> taskDateMap = _mapTasksByDate(eas);
                 List<String> keys = taskDateMap.keys.toList();
 
                 return ListView.builder(
