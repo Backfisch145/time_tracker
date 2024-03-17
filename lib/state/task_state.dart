@@ -16,30 +16,32 @@ class TaskState extends ChangeNotifier {
       UnmodifiableListView(_tasks.where((task) => task.completion == null && task.running));
   UnmodifiableListView<Task> get stoppedTasks =>
       UnmodifiableListView(_tasks.where((task) => task.completion == null && !task.running));
-  UnmodifiableListView<Task> get uncompletedTasks =>
-      UnmodifiableListView(_tasks.where((task) => task.completion == null));
+  UnmodifiableListView<Task> get uncompletedTasks {
+    List<Task> filteredTasks = _tasks
+        .where((task) => task.completion == null)
+        .toList();
+    filteredTasks.sort((a, b) => a.creation.isAfter(b.creation)?1:0);
+
+    return UnmodifiableListView(filteredTasks);
+  }
   UnmodifiableListView<Task> get completedTasks =>
       UnmodifiableListView(_tasks.where((task) => task.completion != null));
 
   void addTask(Task task) {
     _tasks.add(task);
+    taskBox.put(task.id, task);
     notifyListeners();
   }
 
   void deleteTask(Task task) {
     _tasks.remove(task);
     taskBox.delete(task.id);
-
     notifyListeners();
   }
 
   void finishTask(Task task) {
     task.completion = DateTime.now();
-    notifyListeners();
-  }
-
-  void updateTask(Task task) {
-    _tasks.remove(task);
+    taskBox.put(task.id, task);
     notifyListeners();
   }
 

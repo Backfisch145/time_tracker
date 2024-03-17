@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 
+import 'boxes.dart';
+
 @HiveType(typeId: 1)
 class Task {
   @HiveField(0)
@@ -24,6 +26,7 @@ class Task {
   void incDuration() {
     duration = Duration(seconds: duration.inSeconds + 1);
     lastUpdate = DateTime.now();
+    taskBox.put(id, this);
   }
 
   @override

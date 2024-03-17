@@ -80,56 +80,10 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
     return const StopwatchPage();
-  }
-
-  @override
-  void initState() {
-    if (kDebugMode) {
-      print("Main.initState: called()");
-    }
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    if (kDebugMode) {
-      print("Main.dispose: called()");
-    }
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-
-  _saveTasksToHive(TaskState gState) async {
-    if (kDebugMode) {
-      print("Main._saveTasksToHive: called()");
-    }
-
-    for (var value in gState.allTasks) {
-      Task t = value;
-      await taskBox.put(t.id, t);
-      if (kDebugMode) {
-        print("Main._saveTasksToHive: saved Task $t");
-      }
-    }
-    taskBox.flush();
-  }
-  @override
-  didChangeAppLifecycleState(AppLifecycleState state) {
-    if (kDebugMode) {
-      print("Main.didChangeAppLifecycleState: called with state = $state");
-    }
-    super.didChangeAppLifecycleState(state);
-    TaskState gState = Provider.of<TaskState>(context, listen: false);
-    if (state == AppLifecycleState.paused) {
-
-      _saveTasksToHive(gState);
-    }
   }
 }
