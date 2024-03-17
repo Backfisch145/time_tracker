@@ -53,27 +53,27 @@ class _HistoryPageState extends State<HistoryPage> {
           ),
           child: Consumer<TaskState>(
               builder: (context, state, child) {
-                Map<String, List<Task>> ad = _mapTasksByDate(
+                Map<String, List<Task>> taskDateMap = _mapTasksByDate(
                     state.completedTasks
                         .where((element) => (element.duration.inSeconds != 0) || !_hideZeroDuration)
                         .toList()
                 );
-                List<String> keys = ad.keys.toList();
+                List<String> keys = taskDateMap.keys.toList();
 
                 return ListView.builder(
                   itemCount: keys.length,
                   itemBuilder: (context, kexIndex) {
                     String key =keys[kexIndex];
                     int itemCount = 0;
-                    if (ad[key] != null) {
-                      itemCount = ad[key]!.length;
+                    if (taskDateMap[key] != null) {
+                      itemCount = taskDateMap[key]!.length;
                     } else {
                       logger.w("Empty Maps entry on Key[$key]");
                     }
 
                   return Column(
                     children: [
-                      _getTitle(key, ad[key]!),
+                      _getTitle(key, taskDateMap[key]!),
 
                       GridView.builder(
                         shrinkWrap: true,
@@ -84,7 +84,7 @@ class _HistoryPageState extends State<HistoryPage> {
                           crossAxisCount: 3,
                         ),
                         itemBuilder: (context, index) {
-                          Task t  = ad[key]![index];
+                          Task t  = taskDateMap[key]![index];
                           return HistoryCard(
                             task: t,
                             color: Theme.of(context)
@@ -116,13 +116,13 @@ class _HistoryPageState extends State<HistoryPage> {
           return value;
         },
         ifAbsent: () {
-          List<Task> adsa = List.empty(growable: true);
+          List<Task> newList = List.empty(growable: true);
           try {
-            adsa.add(element);
+            newList.add(element);
           } on Exception catch (_, e){
             logger.e(e);
           }
-          return adsa;
+          return newList;
         },
       );
     }

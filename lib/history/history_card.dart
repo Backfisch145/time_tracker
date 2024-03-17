@@ -55,7 +55,7 @@ class _HistoryCardState extends State<HistoryCard> {
   Widget _getTitle() {
     if (widget.task.completion != null) {
       return Text(
-        DateFormat('hh:mm \'Uhr\' dd.MM.yyyy').format(widget.task.completion!),
+        DateFormat('kk:mm \'Uhr\' dd.MM.yyyy').format(widget.task.completion!),
         style: Theme.of(context).textTheme.titleSmall,
       );
     } else {
