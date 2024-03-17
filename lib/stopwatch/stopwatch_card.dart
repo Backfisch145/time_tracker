@@ -91,41 +91,57 @@ class _StopwatchCardState extends State<StopwatchCard> {
         margin: widget.margin,
         clipBehavior: widget.clipBehavior,
         semanticContainer: widget.semanticContainer,
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
-          ),
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  printDuration(widget.task.duration),
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                      color: widget.onColor
-                  ),
+        child: Stack(
+            children: [
+
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(8.0)),
                 ),
-                SizedBox(
-                  width: 320,
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      hintText: 'Name eingeben',
-                    ),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: widget.onColor
-                    ),
-                  ),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        printDuration(widget.task.duration),
+                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                            color: widget.onColor
+                        ),
+                      ),
+                      SizedBox(
+                        width: 320,
+                        child: TextField(
+                          controller: _controller,
+                          decoration: const InputDecoration(
+                            hintText: 'Name eingeben',
+                          ),
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: widget.onColor
+                          ),
+                        ),
+                      ),
+                      const Gap(4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: controlButtons,
+                      )
+                    ]),
+              ),
+              Positioned(
+                top: 0,
+                right: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.delete), // Replace 'your_icon' with your desired icon
+                  onPressed: () {
+                    TaskState gState = Provider.of<TaskState>(context, listen: false);
+                    gState.deleteTask(widget.task);
+                  },
                 ),
-                const Gap(4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: controlButtons,
-                )
-              ]),
-        ),
+              ),
+            ]
+        )
       );
     } catch (a) {
       logger.e("StopwatchCard.build: could not bauild Card", error: a);

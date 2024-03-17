@@ -16,6 +16,8 @@ class Task {
   bool running = false;
   @HiveField(6)
   DateTime? completion;
+  @HiveField(7)
+  DateTime creation = DateTime.now();
 
   Task();
 

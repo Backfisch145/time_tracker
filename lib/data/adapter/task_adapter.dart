@@ -21,6 +21,13 @@ class TaskAdapter extends TypeAdapter<Task> {
       ..completion = fields[6] as DateTime?;
 
 
+    if (numOfFields < 8 || fields[7] == null) {
+      t.creation = DateTime.now();
+    } else {
+      t.creation = fields[7] as DateTime;
+    }
+
+
     Duration d = fields[4] as Duration;
     if (t.lastUpdate != null && t.running == true) {
       int millisSince = DateTime.now().difference(t.lastUpdate!).inMilliseconds;
@@ -35,7 +42,7 @@ class TaskAdapter extends TypeAdapter<Task> {
   @override
   void write(BinaryWriter writer, Task obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +54,9 @@ class TaskAdapter extends TypeAdapter<Task> {
       ..writeByte(5)
       ..write(obj.running)
       ..writeByte(6)
-      ..write(obj.completion);
+      ..write(obj.completion)
+      ..writeByte(7)
+      ..write(obj.creation);
   }
 
   @override
