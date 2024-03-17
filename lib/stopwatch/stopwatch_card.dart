@@ -67,18 +67,18 @@ class _StopwatchCardState extends State<StopwatchCard> {
               Provider.of<TaskState>(context, listen: false).toggleTask(widget.task);
             },
             child: const Icon(Icons.pause)));
+        controlButtons.add(const Gap(24));
+        controlButtons.add(ElevatedButton(
+            onPressed: () {
+              Provider.of<TaskState>(context, listen: false).finishTask(widget.task);
+            },
+            child: const Icon(Icons.stop)));
       } else {
         controlButtons.add(ElevatedButton(
             onPressed: () {
               Provider.of<TaskState>(context, listen: false).toggleTask(widget.task);
             },
             child: const Icon(Icons.play_arrow)));
-
-        controlButtons.add(ElevatedButton(
-            onPressed: () {
-              Provider.of<TaskState>(context, listen: false).finishTask(widget.task);
-            },
-            child: const Icon(Icons.stop)));
       }
 
       return Card(
@@ -121,7 +121,7 @@ class _StopwatchCardState extends State<StopwatchCard> {
                 ),
                 const Gap(4),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: controlButtons,
                 )
               ]),
