@@ -2,6 +2,7 @@
 import 'dart:collection';
 
 import 'package:flutter/foundation.dart';
+import 'package:time_tracker/data/boxes.dart';
 import 'package:time_tracker/data/task.dart';
 
 import '../main.dart';
@@ -26,8 +27,9 @@ class TaskState extends ChangeNotifier {
   }
 
   void deleteTask(Task task) {
-    final taskIndex = _tasks.indexOf(task);
-    _tasks[taskIndex].completion = DateTime.now();
+    _tasks.remove(task);
+    taskBox.delete(task.id);
+
     notifyListeners();
   }
 

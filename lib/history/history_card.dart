@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../data/task.dart';
 import '../../../helper/duration_helper.dart';
+import '../state/task_state.dart';
 
 class HistoryCard extends StatefulWidget {
   final bool enabled;
@@ -83,28 +85,44 @@ class _HistoryCardState extends State<HistoryCard> {
         decoration: const BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(8.0)),
         ),
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              _getTitle(),
-              TextField(
-                controller: _controller,
-                decoration: const InputDecoration(
-                  hintText: 'Name eingeben',
-                  border: InputBorder.none
-                ),
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: widget.onColor
-                ),
+        child: Stack(
+          children: [
+            Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  _getTitle(),
+                  TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                        hintText: 'Name eingeben',
+                        border: InputBorder.none
+                    ),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: widget.onColor
+                    ),
+                  ),
+                  Text(
+                    printDuration(widget.task.duration),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ]
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: IconButton(
+                icon: const Icon(Icons.delete), // Replace 'your_icon' with your desired icon
+                onPressed: () {
+                  TaskState gState = Provider.of<TaskState>(context, listen: false);
+                  gState.deleteTask(widget.task);
+                },
               ),
-              Text(
-                printDuration(widget.task.duration),
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ]
-        ),
+            ),
+          ],
+        )
+
       ),
     );
   }
