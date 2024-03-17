@@ -30,7 +30,7 @@ class _HistoryPageState extends State<HistoryPage> {
     return Scaffold(
       appBar: AppBar(
           backgroundColor: appBarColor,
-          title: Text("Stopuhren",
+          title: Text("Historie",
               style: TextStyle(color: Theme.of(context).colorScheme.onPrimary)),
           leading: BackButton(color: onAppBarColor),
         actions: [
